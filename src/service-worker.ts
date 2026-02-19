@@ -48,8 +48,9 @@ self.addEventListener('fetch', (event) => {
 					if (!networkResponse || networkResponse.status !== 200 || networkResponse.type === 'error') {
 						return networkResponse;
 					}
-
-					caches.open(CACHE).then((cache) => cache.put(event.request, networkResponse.clone()));
+					// Clone immediately; cloning later can fail if the body was already consumed.
+					const responseToCache = networkResponse.clone();
+					event.waitUntil(caches.open(CACHE).then((cache) => cache.put(event.request, responseToCache)));
 					return networkResponse;
 				})
 				.catch(() =>
