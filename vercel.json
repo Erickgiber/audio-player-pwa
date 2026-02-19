@@ -5,7 +5,7 @@
   "trailingSlash": false,
   "headers": [
     {
-      "source": "/(_app)/chunks/.*",
+      "source": "/_app/immutable/:path*",
       "headers": [
         {
           "key": "Cache-Control",
@@ -23,7 +23,25 @@
       ]
     },
     {
-      "source": "/(manifest.json|sw.js|favicon.svg)",
+      "source": "/manifest.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    },
+    {
+      "source": "/favicon.svg",
       "headers": [
         {
           "key": "Cache-Control",
