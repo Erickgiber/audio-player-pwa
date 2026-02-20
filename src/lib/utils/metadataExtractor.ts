@@ -75,21 +75,39 @@ function extractCover(picture: any): string | null {
 	try {
 		if (!picture || !picture.data) return null;
 
-		const data = picture.data;
-		const base64String = String.fromCharCode.apply(null, data as any);
-		const base64 = btoa(base64String);
+		const data = picture.data instanceof Uint8Array ? picture.data : Uint8Array.from(picture.data);
+		let binary = '';
+		const chunkSize = 0x8000;
+		for (let i = 0; i < data.length; i += chunkSize) {
+			binary += String.fromCharCode(...data.subarray(i, i + chunkSize));
+		}
+		const base64 = btoa(binary);
+		const mimeType = normalizeImageMimeType(picture.format);
 
 		// Check size
 		if (base64.length > MAX_COVER_SIZE) {
 			console.warn('[v0] Cover image too large, compressing...');
-			return compressCoverImage(`data:${picture.format || 'image/jpeg'};base64,${base64}`);
+			return compressCoverImage(`data:${mimeType};base64,${base64}`);
 		}
 
-		return `data:${picture.format || 'image/jpeg'};base64,${base64}`;
+		return `data:${mimeType};base64,${base64}`;
 	} catch (error) {
 		console.warn('[v0] Cover extraction error:', error);
 		return null;
 	}
+}
+
+function normalizeImageMimeType(format?: string): string {
+	if (!format) return 'image/jpeg';
+
+	const normalizedFormat = format.toLowerCase();
+	if (normalizedFormat.startsWith('image/')) return normalizedFormat;
+	if (normalizedFormat === 'jpg' || normalizedFormat === 'jpeg') return 'image/jpeg';
+	if (normalizedFormat === 'png') return 'image/png';
+	if (normalizedFormat === 'gif') return 'image/gif';
+	if (normalizedFormat === 'webp') return 'image/webp';
+
+	return 'image/jpeg';
 }
 
 function compressCoverImage(dataUrl: string): string | null {
