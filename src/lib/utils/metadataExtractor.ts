@@ -77,7 +77,8 @@ function extractCover(picture: any): string | null {
 
 		const data = picture.data instanceof Uint8Array ? picture.data : Uint8Array.from(picture.data);
 		let binary = '';
-		const chunkSize = 0x8000;
+		// 32KiB keeps spread-call argument counts comfortably below typical ~64Ki limits.
+		const chunkSize = 32768;
 		for (let i = 0; i < data.length; i += chunkSize) {
 			binary += String.fromCharCode(...data.subarray(i, i + chunkSize));
 		}
@@ -97,6 +98,7 @@ function extractCover(picture: any): string | null {
 	}
 }
 
+/** Converts ID3 picture format values into valid image MIME types for data URLs. */
 function normalizeImageMimeType(format?: string): string {
 	if (!format) return 'image/jpeg';
 
